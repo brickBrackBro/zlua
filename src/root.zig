@@ -57,4 +57,5 @@ pub const LuaWriter = c.lua_Writer;
 pub const LuaBuffer = c.luaL_Buffer;
 pub const LuaReg = c.luaL_Reg;
 pub const LuaStream = c.luaL_Stream;
+pub const CState = c.lua_State;
 pub const State = @import("LuaState.zig");
