@@ -8,7 +8,7 @@ const Type = lua.Type;
 const CFunction = lua.CFunction;
 const Integer = lua.Integer;
 const Number = lua.Number;
-const LuaReg = lua.LuaReg;
+const CReg = lua.CReg;
 const Self = @This();
 ptr: *c.lua_State,
 pub fn init() Error!Self {
@@ -139,7 +139,7 @@ pub fn newMetatable(self: Self, tname: [:0]const u8) NewMetatableResult {
     return @enumFromInt(res);
 }
 
-pub inline fn newLib(self: Self, l: [:LuaReg{}]const LuaReg) void {
+pub inline fn newLib(self: Self, l: [:CReg{}]const CReg) void {
     c.lua_createtable(self.ptr, 0, @intCast(l.len));
     c.luaL_setfuncs(self.ptr, l.ptr, 0);
 }
