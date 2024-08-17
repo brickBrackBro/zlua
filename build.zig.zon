@@ -1,0 +1,20 @@
+.{
+    .name = "lua",
+
+    .version = "0.0.1",
+
+    .dependencies = .{
+        .raw_lua = .{
+            .url = "git+https://github.com/brickBrackBro/lua#94c5e608694eb22ba77ec4cf287996089020081e",
+            .hash = "1220fcdf87b6a9f9a3cb3180fae1fa198dbf99eb295ed3ee80cf4b12a79a58605d5e",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "lua",
+        //"LICENSE",
+        //"README.md",
+    },
+}
