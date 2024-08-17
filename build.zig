@@ -3,10 +3,10 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
 
-    const optimize = b.standardOptimizeOption(.{});
+    const optimize = b.standardOptimizeOption(.{ .preferred_optimize_mode = .ReleaseFast });
     const lua_dep = b.dependency("raw_lua", .{
         .target = target,
-        .optimize = optimize,
+        .release = optimize == .ReleaseFast,
     });
     const mod = b.addModule("lua", .{
         // In this case the main source file is merely a path, however, in more
