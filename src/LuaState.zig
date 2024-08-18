@@ -139,6 +139,9 @@ pub fn newMetatable(self: Self, tname: [:0]const u8) NewMetatableResult {
     return @enumFromInt(res);
 }
 
+pub inline fn setFuncs(self: Self, l: [:CReg{}]const CReg, nup: c_int) void {
+    c.luaL_setfuncs(self.ptr, l, nup);
+}
 pub inline fn newLib(self: Self, l: [:CReg{}]const CReg) void {
     c.lua_createtable(self.ptr, 0, @intCast(l.len));
     c.luaL_setfuncs(self.ptr, l.ptr, 0);
