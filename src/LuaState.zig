@@ -24,7 +24,7 @@ pub inline fn deinit(self: Self) void {
 pub fn err(self: Self, comptime fmt: []const u8, args: anytype) void {
     var buff = [_]u8{0} ** 2048;
     const message = std.fmt.bufPrintZ(&buff, fmt, args) catch @panic("OOM");
-    c.luaL_error(self.ptr, message.ptr);
+    _ = c.luaL_error(self.ptr, message.ptr);
 }
 /// Opens all standard Lua libraries into the given state
 pub inline fn openLibs(self: Self) void {
