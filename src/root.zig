@@ -3,7 +3,7 @@ pub const c = @cImport({
     @cInclude("lualib.h");
     @cInclude("lauxlib.h");
 });
-
+pub const RegestryIndex = c.LUA_REGISTRYINDEX;
 pub const Error = error{
     RuntimeError,
     OutOfMemory,
