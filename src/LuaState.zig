@@ -117,7 +117,10 @@ pub inline fn toString(self: Self, index: c_int) ?[]const u8 {
 pub inline fn toNumber(self: Self, idx: c_int) c.lua_Number {
     return c.lua_tonumberx(self.ptr, idx, null);
 }
-
+/// returns true if userdata has value.
+pub inline fn setIUserValue(self: Self, index: c_int, n: c_int) bool {
+    return c.lua_setiuservalue(self.ptr, index, n) == 1;
+}
 pub inline fn setField(self: Self, index: c_int, k: [:0]const u8) void {
     c.lua_setfield(self.ptr, index, k.ptr);
 }
@@ -167,7 +170,11 @@ pub fn getI(self: Self, index: c_int, i: c.lua_Integer) Type {
     const ret = c.lua_geti(self.ptr, index, i);
     return @enumFromInt(ret);
 }
-pub fn getMetatable(self: Self, name: [:0]const u8) void {
+/// returns true if object at `n` has a metatable
+pub fn getMetatable(self: Self, n: c_int) bool {
+    return c.lua_getmetatable(self.ptr, n) == 1;
+}
+pub fn getNamedMetatable(self: Self, name: [:0]const u8) void {
     _ = c.lua_getfield(self.ptr, c.LUA_REGISTRYINDEX, name.ptr);
 }
 pub fn getTable(self: Self, index: c_int) Type {
