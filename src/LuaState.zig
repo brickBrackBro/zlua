@@ -167,8 +167,8 @@ pub fn getI(self: Self, index: c_int, i: c.lua_Integer) Type {
     const ret = c.lua_geti(self.ptr, index, i);
     return @enumFromInt(ret);
 }
-pub fn getMetatable(self: Self, name: []const u8) bool {
-    _ = c.lua_getfield(self.ptr, c.LUA_REGISTRYINDEX, name);
+pub fn getMetatable(self: Self, name: [:0]const u8) void {
+    _ = c.lua_getfield(self.ptr, c.LUA_REGISTRYINDEX, name.ptr);
 }
 pub fn getTable(self: Self, index: c_int) Type {
     const ret = c.lua_gettable(self.ptr, index);
