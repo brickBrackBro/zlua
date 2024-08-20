@@ -149,7 +149,7 @@ pub inline fn setTable(self: Self, index: c_int) void {
     c.lua_settable(self.ptr, index);
 }
 pub inline fn setFuncs(self: Self, l: [:CReg{}]const CReg, nup: c_int) void {
-    c.luaL_setfuncs(self.ptr, l, nup);
+    c.luaL_setfuncs(self.ptr, l.ptr, nup);
 }
 pub inline fn newLib(self: Self, l: [:CReg{}]const CReg) void {
     c.lua_createtable(self.ptr, 0, @intCast(l.len));
