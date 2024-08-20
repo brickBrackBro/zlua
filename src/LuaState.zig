@@ -21,10 +21,11 @@ pub fn init() Error!Self {
 pub inline fn deinit(self: Self) void {
     c.lua_close(self.ptr);
 }
-pub fn err(self: Self, comptime fmt: []const u8, args: anytype) void {
+pub fn err(self: Self, comptime fmt: []const u8, args: anytype) noreturn {
     var buff = [_]u8{0} ** 2048;
     const message = std.fmt.bufPrintZ(&buff, fmt, args) catch @panic("OOM");
     _ = c.luaL_error(self.ptr, message.ptr);
+    unreachable;
 }
 /// Opens all standard Lua libraries into the given state
 pub inline fn openLibs(self: Self) void {
@@ -154,6 +155,9 @@ pub inline fn setFuncs(self: Self, l: [:CReg{}]const CReg, nup: c_int) void {
 pub inline fn newLib(self: Self, l: [:CReg{}]const CReg) void {
     c.lua_createtable(self.ptr, 0, @intCast(l.len));
     c.luaL_setfuncs(self.ptr, l.ptr, 0);
+}
+pub fn upvalueIndex(_: Self, i: c_int) c_int {
+    return c.lua_upvalueindex(i);
 }
 pub fn getField(self: Self, index: c_int, k: [:0]const u8) Type {
     const ret = c.lua_getfield(self.ptr, index, k.ptr);
