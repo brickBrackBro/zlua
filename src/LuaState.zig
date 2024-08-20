@@ -131,7 +131,7 @@ pub inline fn setI(self: Self, index: c_int, n: Integer) void {
     c.lua_seti(self.ptr, index, n);
 }
 pub inline fn setMetatable(self: Self, index: c_int) void {
-    c.lua_setmetatable(self.ptr, index);
+    _ = c.lua_setmetatable(self.ptr, index);
 }
 pub inline fn setNamedMetatable(self: Self, tname: [:0]const u8) void {
     c.luaL_setmetatable(self.ptr, tname.ptr);
