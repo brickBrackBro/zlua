@@ -268,7 +268,7 @@ pub inline fn checkInteger(self: Self, arg: c_int) Integer {
 }
 pub inline fn checkString(self: Self, arg: c_int) [:0]const u8 {
     const ptr: [*:0]const u8 = c.luaL_checklstring(self.ptr, arg, null);
-    return ptr[0..mem.indexOfSentinel(u8, 0, ptr)];
+    return ptr[0..mem.indexOfSentinel(u8, 0, ptr) :0];
 }
 pub inline fn checkNumber(self: Self, arg: c_int) Number {
     return c.luaL_checknumber(self.ptr, arg);
