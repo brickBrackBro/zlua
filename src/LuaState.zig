@@ -266,7 +266,7 @@ pub inline fn checkAny(self: Self, arg: c_int) void {
 pub inline fn checkInteger(self: Self, arg: c_int) Integer {
     return c.luaL_checkinteger(self.ptr, arg);
 }
-pub inline fn checkString(self: Self, arg: c_int) []const u8 {
+pub inline fn checkString(self: Self, arg: c_int) [:0]const u8 {
     const ptr: [*:0]const u8 = c.luaL_checklstring(self.ptr, arg, null);
     return ptr[0..mem.indexOfSentinel(u8, 0, ptr)];
 }
