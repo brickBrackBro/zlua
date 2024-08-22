@@ -8,6 +8,8 @@ const Type = lua.Type;
 const CFunction = lua.CFunction;
 const Integer = lua.Integer;
 const Number = lua.Number;
+const String = []const u8;
+const CString = []const u8;
 const CReg = lua.CReg;
 const Self = @This();
 ptr: *c.lua_State,
@@ -67,6 +69,30 @@ pub fn loadString(self: Self, str: [:0]const u8) Error!void {
 pub inline fn pop(self: Self, n: i32) void {
     c.lua_pop(self.ptr, n);
 }
+pub fn push(self: Self, comptime lua_type: Type, comptime T: ?type, val: switch (lua_type) {
+    .number => switch (T.?) {
+        Integer, Number => T.?,
+        else => @compileError("unsupponted number type: " ++ @typeName(T.?)),
+    },
+    .string => []const u8,
+    .boolean => bool,
+    .light_user_data => ?*anyopaque,
+    .function => CFunction,
+    else => @compileError("unsupponted type " ++ @tagName(lua_type)),
+}) void {
+    switch (lua_type) {
+        .function => self.pushCFunction(val),
+        .light_user_data => self.pushLightUserData(val),
+        .boolean => self.pushBoolean(val),
+        .string => self.pushString(val),
+        .number => switch (T.?) {
+            Integer => self.pushInteger(val),
+            Number => self.pushNumber(val),
+            else => @compileError("unsupponted number type: " ++ @typeName(T.?)),
+        },
+        else => @compileError("unsupponted type " ++ @tagName(lua_type)),
+    }
+}
 pub inline fn pushBoolean(self: Self, b: bool) void {
     c.lua_pushboolean(self.ptr, @intCast(@intFromBool(b)));
 }
@@ -101,21 +127,39 @@ pub inline fn pushCFunction(self: Self, f: CFunction) void {
 pub inline fn pushValue(self: Self, index: c_int) void {
     c.lua_pushvalue(self.ptr, index);
 }
+pub fn toValue(self: Self, comptime lua_type: Type, comptime T: ?type, index: c_int) switch (lua_type) {
+    .light_user_data, .user_data => *T.?,
+    .string => ?String,
+    .boolean => bool,
+    else => @compileError(std.fmt.comptimePrint("Invalid lua type: {s}", .{@tagName(lua_type)})),
+} {
+    return switch (lua_type) {
+        .light_user_data, .user_data => self.toUserData(T.?, index),
+        .number => switch (T.?) {
+            Integer => self.toInteger(index),
+            Number => self.toNumber(index),
+            else => @compileError("invalid number type: " ++ @typeName(T.?)),
+        },
+        .string => self.toString(index),
+        .boolean => self.toBoolean(index),
+        else => @compileError("Invalid lua type: " ++ @tagName(lua_type)),
+    };
+}
 pub inline fn toBoolean(self: Self, index: c_int) bool {
     c.lua_toboolean(self.ptr, index) == 1;
 }
-pub inline fn toUserData(self: Self, comptime T: type, index: c_int) ?*T {
+pub inline fn toUserData(self: Self, comptime T: type, index: c_int) *T {
     return @ptrCast(@alignCast(c.lua_touserdata(self.ptr, index)));
 }
-pub inline fn toInteger(self: Self, index: c_int) c.lua_Integer {
+pub inline fn toInteger(self: Self, index: c_int) Integer {
     return c.lua_tointegerx(self.ptr, index, null);
 }
-pub inline fn toString(self: Self, index: c_int) ?[]const u8 {
+pub inline fn toString(self: Self, index: c_int) ?String {
     var len: usize = 0;
     const res: ?[*]const u8 = c.lua_tolstring(self.ptr, index, &len);
     return (res orelse return null)[0..len];
 }
-pub inline fn toNumber(self: Self, idx: c_int) c.lua_Number {
+pub inline fn toNumber(self: Self, idx: c_int) Number {
     return c.lua_tonumberx(self.ptr, idx, null);
 }
 /// returns true if userdata has value.
