@@ -10,11 +10,14 @@ const CFn = root.CFunction;
 pub const LibBindings = [:CReg{}]const CReg;
 
 pub fn ZReg(comptime name: [:0]const u8, comptime func: ZFn) CReg {
-    const c = struct {
-        pub fn wrapper(L: ?*CState) callconv(.C) c_int {
+    return CReg{ .name = name.ptr, .func = LuaBind(func) };
+}
+
+pub fn LuaBind(comptime func: ZFn) CFn {
+    return struct {
+        pub fn genbinding(L: ?*CState) c_int {
             const state: State = .{ .ptr = L.? };
             return @call(.always_inline, func, .{state});
         }
-    };
-    return CReg{ .name = name.ptr, .func = c.wrapper };
+    }.genbinding;
 }
