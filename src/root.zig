@@ -3,6 +3,7 @@ pub const c = @cImport({
     @cInclude("lualib.h");
     @cInclude("lauxlib.h");
 });
+pub const extentions = @import("extentions.zig");
 pub const regestry_index = c.LUA_REGISTRYINDEX;
 pub const Error = error{
     RuntimeError,
