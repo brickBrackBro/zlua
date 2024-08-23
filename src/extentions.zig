@@ -6,6 +6,7 @@ const ZFn = *const fn (State) i32;
 
 const CReg = root.CReg;
 const CFn = root.CFunction;
+pub const LibBindings = [:CReg{}]const CReg;
 
 pub fn ZReg(comptime name: []const u8, comptime func: ZFn) CReg {
     const c = struct {
