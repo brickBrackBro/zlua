@@ -1,3 +1,4 @@
+const std = @import("std");
 const root = @import("root.zig");
 const State = @import("LuaState.zig");
 const CState = root.CState;
@@ -12,7 +13,7 @@ pub fn ZReg(comptime name: [:0]const u8, comptime func: ZFn) CReg {
     const c = struct {
         pub fn wrapper(L: ?*CState) callconv(.C) c_int {
             const state: State = .{ .ptr = L.? };
-            return @call(.inline_always, func, .{state});
+            return @call(.always_inline, func, .{state});
         }
     };
     return CReg{ .name = name.ptr, .func = c.wrapper };
