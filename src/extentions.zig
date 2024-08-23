@@ -15,7 +15,7 @@ pub fn ZReg(comptime name: [:0]const u8, comptime func: ZFn) CReg {
 
 pub fn LuaBind(comptime func: ZFn) CFn {
     return struct {
-        pub fn genbinding(L: ?*CState) c_int {
+        pub fn genbinding(L: ?*CState) callconv(.C) c_int {
             const state: State = .{ .ptr = L.? };
             return @call(.always_inline, func, .{state});
         }
