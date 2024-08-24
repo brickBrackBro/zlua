@@ -35,11 +35,9 @@ pub fn toLua(self: anytype, state: State) void {
         .Struct => |info| {
             state.creatTable(0, @intCast(info.fields.len));
             inline for (info.fields) |field| {
-                {
-                    defer state.pop(1);
-                    toLua(@field(self, field.name), state);
-                    state.setField(-2, field.name);
-                }
+                toLua(@field(self, field.name), state);
+                state.setField(-2, field.name);
+                state.pop(1);
             }
         },
         .Optional => |_| {
