@@ -66,8 +66,8 @@ pub fn fromLua(comptime T: type, state: State) T {
     var val: T = undefined;
     const lua_type: root.Type = switch (T) {
         ?[]const u8, []const u8 => .string,
-        bool => .boolean,
-        root.Integer, root.Number => .number,
+        ?bool, bool => .boolean,
+        ?root.Integer, ?root.Number => .number,
         else => undefined,
     };
     switch (T) {
