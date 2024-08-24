@@ -37,7 +37,6 @@ pub fn toLua(self: anytype, state: State) void {
             inline for (info.fields) |field| {
                 toLua(@field(self, field.name), state);
                 state.setField(-2, field.name);
-                state.pop(1);
             }
         },
         .Optional => |_| {
@@ -60,10 +59,6 @@ pub fn toLua(self: anytype, state: State) void {
         else => @compileError("wrong type for field"),
     }
 }
-pub fn FromLua(comptime T: type) fn (State) T {
-    return struct {
-        pub fn from_lua(state: State) T {
-            _ = state;
-        }
-    }.from_lua;
+pub fn fromLua(comptime T: type, state: State) T {
+    _ = state;
 }
