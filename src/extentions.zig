@@ -40,7 +40,10 @@ pub fn toLua(self: anytype, state: State) void {
             }
         },
         .Optional => |_| {
-            toLua(self.?, state);
+            if (self) |v|
+                toLua(v, state)
+            else
+                state.pushNil();
         },
         .Array => |arr| {
             if (arr.child != u8)
@@ -60,5 +63,39 @@ pub fn toLua(self: anytype, state: State) void {
     }
 }
 pub fn fromLua(comptime T: type, state: State) T {
-    _ = state;
+    var val: T = undefined;
+    const lua_type: root.Type = switch (T) {
+        ?[]const u8, []const u8 => .string,
+        bool => .boolean,
+        root.Integer, root.Number => .number,
+        else => @compileError("invalid type for fromrLua: " ++ @typeName(T)),
+    };
+    switch (T) {
+        ?bool, ?root.Integer, ?root.Number => {
+            val = state.toOptionalValue(lua_type, @typeInfo(T).Optional.child, -1);
+        },
+        bool, root.Integer, root.Number => {
+            val = state.toValue(lua_type, T, -1);
+        },
+        ?[]const u8 => {
+            val = state.toOptionalValue(.string, null, -1);
+        },
+        []const u8 => {
+            val = state.toValue(.string, null, -1) orelse "";
+        },
+        else => {
+            const TInfo = @typeInfo(T);
+            switch (TInfo) {
+                .Struct => |info| {
+                    inline for (info.fields) |field| {
+                        state.getField(-1, field.name);
+                        @field(val, field.name) = fromLua(field.type, state);
+                        state.pop(1);
+                    }
+                },
+                else => @compileError("invalid type for fromLua " ++ @typeName(T)),
+            }
+        },
+    }
+    return val;
 }
