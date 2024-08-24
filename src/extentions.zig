@@ -68,7 +68,7 @@ pub fn fromLua(comptime T: type, state: State) T {
         ?[]const u8, []const u8 => .string,
         bool => .boolean,
         root.Integer, root.Number => .number,
-        else => @compileError("invalid type for fromrLua: " ++ @typeName(T)),
+        else => undefined,
     };
     switch (T) {
         ?bool, ?root.Integer, ?root.Number => {
