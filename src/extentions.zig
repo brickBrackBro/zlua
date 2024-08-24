@@ -88,7 +88,7 @@ pub fn fromLua(comptime T: type, state: State) T {
             switch (TInfo) {
                 .Struct => |info| {
                     inline for (info.fields) |field| {
-                        state.getField(-1, field.name);
+                        _ = state.getField(-1, field.name);
                         @field(val, field.name) = fromLua(field.type, state);
                         state.pop(1);
                     }
