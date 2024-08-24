@@ -69,17 +69,27 @@ pub fn loadString(self: Self, str: [:0]const u8) Error!void {
 pub inline fn pop(self: Self, n: i32) void {
     c.lua_pop(self.ptr, n);
 }
-pub fn push(self: Self, comptime lua_type: Type, comptime T: ?type, val: switch (lua_type) {
-    .number => switch (T.?) {
-        Integer, Number => T.?,
-        else => @compileError("unsupponted number type: " ++ @typeName(T.?)),
-    },
-    .string => []const u8,
-    .boolean => bool,
-    .light_user_data => ?*anyopaque,
-    .function => CFunction,
-    else => @compileError("unsupponted type " ++ @tagName(lua_type)),
-}) void {
+pub fn PushType(comptime lua_type: Type, comptime T: ?type) type {
+    return switch (lua_type) {
+        .number => switch (T.?) {
+            Integer, Number => T.?,
+            else => @compileError("unsupponted number type: " ++ @typeName(T.?)),
+        },
+        .string => []const u8,
+        .boolean => bool,
+        .light_user_data => ?*anyopaque,
+        .function => CFunction,
+        else => @compileError("unsupponted type " ++ @tagName(lua_type)),
+    };
+}
+pub fn pushOptional(self: Self, comptime lua_type: Type, comptime T: ?type, val: ?PushType(lua_type, T)) void {
+    if (val) |v| {
+        self.push(lua_type, T, v);
+    } else {
+        self.pushNil();
+    }
+}
+pub fn push(self: Self, comptime lua_type: Type, comptime T: ?type, val: PushType(lua_type, T)) void {
     switch (lua_type) {
         .function => self.pushCFunction(val),
         .light_user_data => self.pushLightUserData(val),
@@ -127,12 +137,24 @@ pub inline fn pushCFunction(self: Self, f: CFunction) void {
 pub inline fn pushValue(self: Self, index: c_int) void {
     c.lua_pushvalue(self.ptr, index);
 }
-pub fn toValue(self: Self, comptime lua_type: Type, comptime T: ?type, index: c_int) switch (lua_type) {
-    .light_user_data, .user_data => *T.?,
-    .string => ?String,
-    .boolean => bool,
-    else => @compileError(std.fmt.comptimePrint("Invalid lua type: {s}", .{@tagName(lua_type)})),
-} {
+pub fn PopType(comptime lua_type: Type, comptime T: ?type) type {
+    return switch (lua_type) {
+        .light_user_data, .user_data => *T.?,
+        .string => ?String,
+        .boolean => bool,
+        .number => switch (T.?) {
+            Integer, Number => T.?,
+            else => @compileError(std.fmt.comptimePrint("Invalid lua type: {s}", .{@tagName(lua_type)})),
+        },
+        else => @compileError(std.fmt.comptimePrint("Invalid lua type: {s}", .{@tagName(lua_type)})),
+    };
+}
+pub fn toOptionalValue(self: Self, comptime lua_type: Type, comptime T: ?type, index: c_int) ?PopType(lua_type, T) {
+    if (self.getType(index) == .nil)
+        return null;
+    return self.toValue(lua_type, T, index);
+}
+pub fn toValue(self: Self, comptime lua_type: Type, comptime T: ?type, index: c_int) PopType(lua_type, T) {
     return switch (lua_type) {
         .light_user_data, .user_data => self.toUserData(T.?, index),
         .number => switch (T.?) {
