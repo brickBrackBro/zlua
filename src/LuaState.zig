@@ -184,6 +184,9 @@ pub inline fn toString(self: Self, index: c_int) ?String {
 pub inline fn toNumber(self: Self, idx: c_int) Number {
     return c.lua_tonumberx(self.ptr, idx, null);
 }
+pub inline fn setTop(self: Self, idx: c_int) void {
+    c.lua_settop(self.ptr, idx);
+}
 /// returns true if userdata has value.
 pub inline fn setIUserValue(self: Self, index: c_int, n: c_int) bool {
     return c.lua_setiuservalue(self.ptr, index, n) == 1;
