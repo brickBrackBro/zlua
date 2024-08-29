@@ -44,11 +44,53 @@ pub const NextResult = enum(c_int) {
     done = 0,
     value = 1,
 };
+
 pub inline fn next(self: Self, index: c_int) NextResult {
     return @enumFromInt(c.lua_next(self.ptr, index));
 }
-pub fn pcall(self: Self, nargs: i32, nresults: i32, msgh: ?i32) Error!void {
-    const status: Status = @enumFromInt(c.lua_pcallk(self.ptr, nargs, nresults, msgh orelse 0, 0, null));
+///  Calls a function. Like regular Lua calls, lua_call respects the __call metamethod. So, here the word "function" means
+///  any callable value.
+///
+/// To do a call you must use the following protocol: first, the function to be called is pushed onto the stack; then, the
+/// arguments to the call are pushed in direct order; that is, the first argument is pushed first. Finally you call lua_call;
+///
+/// When the function returns, all arguments and the function value are popped and the call results are pushed onto the stack.
+///
+/// Any error while calling and running the function is propagated upwards (with a longjmp).
+///
+/// The following example shows how the host program can do the equivalent to this Lua code:
+///
+/// ```lua
+///      a = f("how", t.x, 14)
+/// ```
+///
+/// Here it is in zig:
+///```zig
+///    _ = lua.getGlobal("f");
+///    _ = lua.pushString("how");
+///    _ = lua.getGlobal("t");
+///    _ = lua.getField(-1, "x");
+///    lua.remove(-2);
+///    lua.pushInteger(14);
+///    lua.call(3, 1);
+///    lua.setGlobal(L, "a");
+///```
+/// Note that the code above is balanced: at its end, the stack is back to its original configuration. This is considered good programming practice.
+pub inline fn call(
+    self: Self,
+    /// the number of arguments that you pushed onto the stack
+    nargs: i32,
+    /// The number of results is adjusted to `nresults`, unless nresults is `null`. In this case,
+    /// all results from the function are pushed; Lua takes care that the returned values fit into
+    /// the stack space, but it does not ensure any extra space in the stack. The function results
+    /// are pushed onto the stack in direct order (the first result is pushed first), so that after
+    /// the call the last result is on the top of the stack.
+    nresults: ?i32,
+) void {
+    c.lua_call(self.ptr, nargs, nresults orelse c.LUA_MULTRET);
+}
+pub inline fn pcall(self: Self, nargs: i32, nresults: ?i32, msgh: ?i32) Error!void {
+    const status: Status = @enumFromInt(c.lua_pcallk(self.ptr, nargs, nresults orelse c.LUA_MULTRET, msgh orelse 0, 0, null));
     try status.check();
 }
 
@@ -264,12 +306,15 @@ pub fn getIUserValue(self: Self, index: c_int, n: c_int) Type {
     const ret = c.lua_getiuservalue(self.ptr, index, n);
     return @enumFromInt(ret);
 }
+///  Moves the top element into the given valid index, shifting up the elements above this index to open space. This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position.
 pub inline fn insert(self: Self, index: c_int) void {
     c.lua_insert(self.ptr, index);
 }
+/// Removes the element at the given valid index, shifting down the elements above this index to fill the gap. This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position.
 pub inline fn remove(self: Self, index: c_int) void {
     c.lua_remove(self.ptr, index);
 }
+/// Moves the top element into the given valid index without shifting any element (therefore replacing the value at that given index), and then pops the top element.
 pub inline fn replace(self: Self, index: c_int) void {
     c.lua_replace(self.ptr, index);
 }
