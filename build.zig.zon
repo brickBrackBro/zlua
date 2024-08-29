@@ -5,8 +5,8 @@
 
     .dependencies = .{
         .raw_lua = .{
-            .url = "git+https://github.com/brickBrackBro/lua#94c5e608694eb22ba77ec4cf287996089020081e",
-            .hash = "1220fcdf87b6a9f9a3cb3180fae1fa198dbf99eb295ed3ee80cf4b12a79a58605d5e",
+            .url = "https://github.com/allyourcodebase/lua/archive/refs/tags/5.4.7.tar.gz",
+            .hash = "1220872f4f3622d9052e67b416150042c5de6dba341a824540dff5fe0ca906dd3be4",
         },
     },
     .paths = .{
