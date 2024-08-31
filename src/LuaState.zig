@@ -87,7 +87,7 @@ pub inline fn call(
     /// the call the last result is on the top of the stack.
     nresults: ?i32,
 ) void {
-    c.lua_callk(self.ptr, nargs, nresults orelse c.LUA_MULTRET, null);
+    c.lua_callk(self.ptr, nargs, nresults orelse c.LUA_MULTRET, @as(c_int, 0), null);
 }
 pub inline fn pcall(self: Self, nargs: i32, nresults: ?i32, msgh: ?i32) Error!void {
     const status: Status = @enumFromInt(c.lua_pcallk(self.ptr, nargs, nresults orelse c.LUA_MULTRET, msgh orelse 0, 0, null));
