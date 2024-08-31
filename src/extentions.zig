@@ -93,6 +93,18 @@ pub fn fromLua(comptime T: type, state: State) T {
                         state.pop(1);
                     }
                 },
+                .Optional => |opt| {
+                    if (state.getType(-1) == .nil)
+                        val = null
+                    else
+                        val = fromLua(opt.child, state);
+                },
+                .Int => {
+                    val = @intCast(state.toInteger(-1));
+                },
+                .Float => {
+                    val = @floatCast(state.toNumber(-1));
+                },
                 else => @compileError("invalid type for fromLua " ++ @typeName(T)),
             }
         },
