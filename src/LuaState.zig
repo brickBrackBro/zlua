@@ -274,6 +274,13 @@ pub fn getField(self: Self, index: c_int, k: [:0]const u8) Type {
     const ret = c.lua_getfield(self.ptr, index, k.ptr);
     return @enumFromInt(ret);
 }
+pub fn getSubTable(self: Self, index: c_int, name: [:0]const u8) bool {
+    return c.luaL_getsubtable(self.ptr, index, name.ptr) == @as(i32, @intCast(@intFromBool(true)));
+}
+pub fn getMetaField(self: Self, obj: c_int, e: [:0]const u8) Type {
+    return @enumFromInt(c.luaL_getmetafield(self.ptr, obj, e.ptr));
+}
+
 pub fn addRequireLib(self: Self, mod_name: [:0]const u8, callback: CFunction) void {
     _ = c.luaL_getsubtable(self.ptr, c.LUA_REGISTRYINDEX, c.LUA_PRELOAD_TABLE);
     self.pushCFunction(callback);
