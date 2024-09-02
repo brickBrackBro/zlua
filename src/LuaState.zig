@@ -20,6 +20,12 @@ pub fn init() Error!Self {
     };
 }
 
+pub fn initWithAlloc(f: lua.LuaAlloc, ud: ?*anyopaque) Error!Self {
+    const ptr = c.lua_newstate(f, ud) orelse return error.OutOfMemory;
+    return .{
+        .ptr = ptr,
+    };
+}
 pub inline fn deinit(self: Self) void {
     c.lua_close(self.ptr);
 }
