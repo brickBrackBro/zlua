@@ -20,6 +20,7 @@ pub fn init() Error!Self {
     };
 }
 
+/// BUG: I don't know how to implement the lua_Alloc interface without causing undefined behavior.
 pub fn initWithAlloc(f: lua.LuaAlloc, ud: ?*anyopaque) Error!Self {
     const ptr = c.lua_newstate(f, ud) orelse return error.OutOfMemory;
     return .{
